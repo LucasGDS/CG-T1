@@ -2,7 +2,7 @@
 // ./npm install
 // ./npm start 
 // http://localhost:3000/
-var canvas = document.getElementById('canvasantes');
+var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
 ctx.font = '48px serif';
@@ -14,7 +14,7 @@ function drawimg(img)
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
 }
 
-function cinza(img)
+function cinza(img) // Luminosidade:0.21 R + 0.72 G + 0.07 B
 {
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 }
