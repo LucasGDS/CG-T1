@@ -10,10 +10,16 @@
     <p>Welcome to <%= title %></p> 
     <br>
     <div id="buttons">
-      <button onclick="cinza()">Tons de Cinza</button>
+      <button onclick="cinza(0)">Tons de Cinza</button>
       <button onclick="gaussiano()">Gaussiano</button>
-      <button>Sobel</button>
+      <button onclick="LoG()">Arestas 1</button>
+      <button onclick="LoGinv()">Arestas 2</button>
       <button >MODO4</button>
+    </div>
+    <br>
+    <div id="buttonslow">
+      <button onclick="LoG()">LoG</button>
+      <button onclick="LoGinv()">LoG inverso</button>
     </div>
     <br>
     <br>

@@ -13,8 +13,9 @@ function drawimg(img)
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
 }
 
-function cinza() // Luminosidade:0.21 R + 0.72 G + 0.07 B ou L=0.3R+0.59G+0.11B?
+function cinza(sob) // Luminosidade:0.21 R + 0.72 G + 0.07 B ou L=0.3R+0.59G+0.11B?
 {
+  sob === 0 ? console.log("cinza"):console.log("arestas");
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
   for (let i = 0; i < imgData.data.length; i+=4)
   {
@@ -22,11 +23,18 @@ function cinza() // Luminosidade:0.21 R + 0.72 G + 0.07 B ou L=0.3R+0.59G+0.11B?
     let G = imgData.data[i+1];
     let B = imgData.data[i+2];
 
-    var newcolor = Math.floor(0.21*R+0.72*G+0.07*B);
+    if (sob === null)
+    {
+      var newcolor = Math.floor(0.21*R+0.72*G+0.07*B);
+    }
+    else
+    {
+      var newcolor = Math.floor(0.30*R+0.59*G+0.11*B);
+    }
     imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = newcolor;
   }
   ctx.putImageData(imgData,0,0);
-  console.log("cinza");
+  
 }
 
 function gaussiano() // mascara 3x3
@@ -39,8 +47,6 @@ function gaussiano() // mascara 3x3
 
   for (let i = 0; i < imgData.data.length; i+=4)
   {
-    let rgbponderado;
-
     let x = (i / 4) % canvas.width;
     let y = Math.floor((i / 4) / canvas.width);
 
@@ -74,4 +80,65 @@ function gaussiano() // mascara 3x3
 
   ctx.putImageData(imgData,0,0);
   console.log("gauss");
+}
+
+function laplaciano()
+//     [0 -1 0]
+//     |-1 4-1|
+//     [0 -1 0]
+//
+{
+  let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  let oldimgData = imgData;
+
+  for (let i = 0; i < imgData.data.length; i+=4)
+  {
+    let x = (i / 4) % canvas.width;
+    let y = Math.floor((i / 4) / canvas.width);
+
+    if( x === 0 || y === 0 || x === canvas.width-1 || y === canvas.height-1) //edge case, skip iteration
+    {
+      imgData.data[i] = 0;
+      imgData.data[i+1] = 0;
+      imgData.data[i+2] = 0;
+      continue;
+    }    
+    let os12 = (x + (y-1)*canvas.width) * 4; 
+    let os21 = ((x-1) + y*canvas.width) * 4; 
+    let os23 = ((x+1) + y*canvas.width) * 4;  
+    let os32 = (x + (y+1)*canvas.width) * 4; 
+    
+    
+    for (let j = 0;j < 3; ++j) //one for each RGB
+    {
+      imgData.data[i+j] = (4*oldimgData.data[i+j]
+      -oldimgData.data[os12+j]
+      -oldimgData.data[os21+j]
+      -oldimgData.data[os23+j]
+      -oldimgData.data[os32+j]);
+    }
+  }
+
+  ctx.putImageData(imgData,0,0);
+  console.log("laplaciano");
+}
+
+function LoG()
+{
+  cinza(1);
+  gaussiano();
+  laplaciano();
+}
+
+function LoGinv()
+{
+  LoG();
+  let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  for (let i = 0; i < imgData.data.length; i+=4)
+  {
+    imgData.data[i] = 255-imgData.data[i];
+    imgData.data[i+1] = 255-imgData.data[i+1];
+    imgData.data[i+2] = 255-imgData.data[i+2];
+  }
+  ctx.putImageData(imgData,0,0);
 }

@@ -15,6 +15,9 @@ p{
 #buttons{
   text-align: center;
 }
+#buttonslow{
+  text-align: center;
+}
 button{
   width:180px;
   height:50px;
