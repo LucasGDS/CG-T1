@@ -23,7 +23,7 @@ function cinza(sob) // Luminosidade:0.21 R + 0.72 G + 0.07 B ou L=0.3R+0.59G+0.1
     let G = imgData.data[i+1];
     let B = imgData.data[i+2];
 
-    if (sob === null)
+    if (sob === 0)
     {
       var newcolor = Math.floor(0.21*R+0.72*G+0.07*B);
     }
@@ -47,7 +47,7 @@ function gaussiano() // mascara 3x3
 
   for (let i = 0; i < imgData.data.length; i+=4)
   {
-    let x = (i / 4) % canvas.width;
+    let x = (i / 4) % canvas.width; //iterate on vector
     let y = Math.floor((i / 4) / canvas.width);
 
     if( x === 0 || y === 0 || x === canvas.width-1 || y === canvas.height-1) //edge case, skip iteration
@@ -64,28 +64,6 @@ function gaussiano() // mascara 3x3
     let os32 = (x + (y+1)*canvas.width) * 4; 
     let os33 = ((x+1) + (y+1)*canvas.width) * 4;
 
-    // if( x === 0)
-    // {
-    //   os21 = i;
-    // }
-    // if (x === canvas.width-1)
-    // {
-    //   os23 = i;
-    // }
-    // if(y === 0)
-    // {
-    //   os12 = i;
-    //   os11 = os21;
-    //   os13 = os23;
-    // }
-    // if(y === canvas.height-1)
-    // {
-    //   os32 = i;
-    //   os31 = os21;
-    //   os33 = os23
-    // }
-
-    
     for (let j = 0;j < 3; ++j) //one for each RGB
     {
       imgData.data[i+j] = 1/16*(oldimgData.data[os11+j]
@@ -118,34 +96,15 @@ function laplaciano()
     let x = (i / 4) % canvas.width;
     let y = Math.floor((i / 4) / canvas.width);
 
+    if( x === 0 || y === 0 || x === canvas.width-1 || y === canvas.height-1) //edge case, skip iteration
+    {
+      continue;
+    }
+
     let os12 = (x + (y-1)*canvas.width) * 4; 
     let os21 = ((x-1) + y*canvas.width) * 4; 
     let os23 = ((x+1) + y*canvas.width) * 4;  
     let os32 = (x + (y+1)*canvas.width) * 4; 
-
-    // if( x === 0) //edge case, skip iteration
-    // {
-    //   os21 = i;
-    // }
-    // if (x === canvas.width-1)
-    // {
-    //   os23 = i;
-    // }
-
-    // if(y === 0)
-    // {
-    //   os12 = i;
-    //   os11 = os21;
-    //   os13 = os23;
-    // }
-    
-    // if(y === canvas.height-1)
-    // {
-    //   os32 = i;
-    //   os31 = os21;
-    //   os33 = os23
-    // }
-    
     
     for (let j = 0;j < 3; ++j) //one for each RGB
     {
@@ -160,18 +119,23 @@ function laplaciano()
 function Sobel()
 {
   cinza(1);
-  //gaussiano();
+  //gaussiano(); //SE FOSSE NECESSARIO BASTARIA DESCOMENTAR
 
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-  let oldimgData = ctx.getImageData(0,0,canvas.width,canvas.height);;
-  let Gx = ctx.getImageData(0,0,canvas.width,canvas.height);;
-  let Gy = ctx.getImageData(0,0,canvas.width,canvas.height);;
+  let oldimgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  let Gx = ctx.getImageData(0,0,canvas.width,canvas.height);
+  let Gy = ctx.getImageData(0,0,canvas.width,canvas.height);
 
   for (let i = 0; i < imgData.data.length; i+=4)
   {
     let x = (i / 4) % canvas.width;
     let y = Math.floor((i / 4) / canvas.width);
 
+    if( x === 0 || y === 0 || x === canvas.width-1 || y === canvas.height-1) //edge case, skip iteration
+    {
+      continue;
+    }
+    
     let os11 = ((x-1) + (y-1)*canvas.width) * 4; //offset11    
     let os12 = (x + (y-1)*canvas.width) * 4;
     let os13 = ((x+1) + (y-1)*canvas.width) * 4; 
