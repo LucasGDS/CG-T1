@@ -54,7 +54,7 @@ function gaussiano() // mascara 3x3
     {
       continue;
     }
-
+    
     let os11 = ((x-1) + (y-1)*canvas.width) * 4; //offset11    
     let os12 = (x + (y-1)*canvas.width) * 4;
     let os13 = ((x+1) + (y-1)*canvas.width) * 4; 
@@ -63,6 +63,28 @@ function gaussiano() // mascara 3x3
     let os31 = ((x-1) + (y+1)*canvas.width) * 4; 
     let os32 = (x + (y+1)*canvas.width) * 4; 
     let os33 = ((x+1) + (y+1)*canvas.width) * 4;
+
+    // if( x === 0)
+    // {
+    //   os21 = i;
+    // }
+    // if (x === canvas.width-1)
+    // {
+    //   os23 = i;
+    // }
+    // if(y === 0)
+    // {
+    //   os12 = i;
+    //   os11 = os21;
+    //   os13 = os23;
+    // }
+    // if(y === canvas.height-1)
+    // {
+    //   os32 = i;
+    //   os31 = os21;
+    //   os33 = os23
+    // }
+
     
     for (let j = 0;j < 3; ++j) //one for each RGB
     {
@@ -89,38 +111,107 @@ function laplaciano()
 //
 {
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-  let oldimgData = imgData;
+  let oldimgData = ctx.getImageData(0,0,canvas.width,canvas.height); 
 
   for (let i = 0; i < imgData.data.length; i+=4)
   {
     let x = (i / 4) % canvas.width;
     let y = Math.floor((i / 4) / canvas.width);
 
-    if( x === 0 || y === 0 || x === canvas.width-1 || y === canvas.height-1) //edge case, skip iteration
-    {
-      imgData.data[i] = 0;
-      imgData.data[i+1] = 0;
-      imgData.data[i+2] = 0;
-      continue;
-    }    
     let os12 = (x + (y-1)*canvas.width) * 4; 
     let os21 = ((x-1) + y*canvas.width) * 4; 
     let os23 = ((x+1) + y*canvas.width) * 4;  
     let os32 = (x + (y+1)*canvas.width) * 4; 
+
+    // if( x === 0) //edge case, skip iteration
+    // {
+    //   os21 = i;
+    // }
+    // if (x === canvas.width-1)
+    // {
+    //   os23 = i;
+    // }
+
+    // if(y === 0)
+    // {
+    //   os12 = i;
+    //   os11 = os21;
+    //   os13 = os23;
+    // }
+    
+    // if(y === canvas.height-1)
+    // {
+    //   os32 = i;
+    //   os31 = os21;
+    //   os33 = os23
+    // }
     
     
     for (let j = 0;j < 3; ++j) //one for each RGB
     {
-      imgData.data[i+j] = (4*oldimgData.data[i+j]
-      -oldimgData.data[os12+j]
-      -oldimgData.data[os21+j]
-      -oldimgData.data[os23+j]
-      -oldimgData.data[os32+j]);
+      imgData.data[i+j] = (4*oldimgData.data[i+j]-oldimgData.data[os12+j]-oldimgData.data[os21+j]-oldimgData.data[os23+j]-oldimgData.data[os32+j]);
     }
   }
 
   ctx.putImageData(imgData,0,0);
   console.log("laplaciano");
+}
+
+function Sobel()
+{
+  cinza(1);
+  //gaussiano();
+
+  let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  let oldimgData = ctx.getImageData(0,0,canvas.width,canvas.height);;
+  let Gx = ctx.getImageData(0,0,canvas.width,canvas.height);;
+  let Gy = ctx.getImageData(0,0,canvas.width,canvas.height);;
+
+  for (let i = 0; i < imgData.data.length; i+=4)
+  {
+    let x = (i / 4) % canvas.width;
+    let y = Math.floor((i / 4) / canvas.width);
+
+    let os11 = ((x-1) + (y-1)*canvas.width) * 4; //offset11    
+    let os12 = (x + (y-1)*canvas.width) * 4;
+    let os13 = ((x+1) + (y-1)*canvas.width) * 4; 
+    let os21 = ((x-1) + y*canvas.width) * 4; 
+    let os23 = ((x+1) + y*canvas.width) * 4; 
+    let os31 = ((x-1) + (y+1)*canvas.width) * 4; 
+    let os32 = (x + (y+1)*canvas.width) * 4; 
+    let os33 = ((x+1) + (y+1)*canvas.width) * 4;
+  
+    for (let j = 0;j < 3; ++j) //one for each RGB
+    {
+      Gx.data[i+j] = (-oldimgData.data[os11+j]
+        +0
+        +oldimgData.data[os13+j]
+        -2*oldimgData.data[os21+j]
+        +0
+        +2*oldimgData.data[os23+j]
+        -oldimgData.data[os31+j]
+        +0
+        +oldimgData.data[os33+j]);
+    }
+
+    for (let j = 0;j < 3; ++j) //one for each RGB
+    {
+      Gy.data[i+j] = (oldimgData.data[os11+j]
+        +2*oldimgData.data[os12+j]
+        +oldimgData.data[os13+j]
+        -oldimgData.data[os31+j]
+        -2*oldimgData.data[os32+j]
+        -oldimgData.data[os33+j]);
+    }
+    
+    for (let j = 0;j < 3; ++j) //one for each RGB
+    {
+      imgData.data[i+j] = Math.sqrt( (Gx.data[i+j]*Gx.data[i+j]) + (Gy.data[i+j] * Gy.data[i+j])); 
+    }
+  }
+
+  ctx.putImageData(imgData,0,0);
+  console.log("Sobel");
 }
 
 function LoG()
@@ -130,9 +221,8 @@ function LoG()
   laplaciano();
 }
 
-function LoGinv()
+function corInv()
 {
-  LoG();
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
   for (let i = 0; i < imgData.data.length; i+=4)
   {
